@@ -3,6 +3,7 @@ package uk.co.akm.test.barcodereaderdemo;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,11 +19,11 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
  * Once the photo of the barcode has been taken, the summary of the decoded barcode information is
  * displayed on the screen (together with the barcode photo taken). Please note that all the photo-taking
  * related code is handled by the #PhotoActivity subclass. This activity contains only the barcode-reading
- * related code.
+ * related code inside its {@link VisionAsyncTask} subclass, i.e. #BarcodeReaderTask.
  *
  *  Created by Thanos Mavroidis on 05/05/2017.
  */
-public class BarcodeReaderActivity extends AbstractVisionActivity<Barcode> {
+public final class BarcodeReaderActivity extends AbstractVisionActivity<Barcode> {
 
     @Override
     protected int getLayoutResId() {
@@ -50,33 +51,50 @@ public class BarcodeReaderActivity extends AbstractVisionActivity<Barcode> {
     }
 
     @Override
-    protected String decodeBitmapAsString(Detector<Barcode> detector, Bitmap bitmap) {
-        final Barcode barcode = readBarCode(detector, bitmap);
-        if (barcode == null) {
-            return null;
-        } else {
-            return buildBarCodeInfo(barcode);
-        }
+    protected VisionAsyncTask buildVisionTask() {
+        return new BarcodeReaderTask(this);
     }
 
-    private Barcode readBarCode(Detector<Barcode> detector, Bitmap barcodeImage) {
-        final Frame frame = new Frame.Builder().setBitmap(barcodeImage).build();
-        final SparseArray<Barcode> barcodes = detector.detect(frame);
+    /**
+     * Task that decodes a barcode bitmap and returns the corresponding barcode number as a string.
+     */
+    private static final class BarcodeReaderTask extends VisionAsyncTask<Barcode> {
+        private static final String TAG = BarcodeReaderTask.class.getSimpleName();
 
-        if (barcodes != null && barcodes.size() > 0) {
-            return barcodes.valueAt(0);
-        } else {
-            return null;
+        BarcodeReaderTask(AbstractVisionActivity<Barcode> parent) {
+            super(parent);
         }
-    }
 
-    private String buildBarCodeInfo(Barcode barcode) {
-        final String formattedRawValue = BarcodeDataFormatter.formatBarCodeNumber(barcode.rawValue);
+        @Override
+        protected String decodeBitmapAsString(Detector<Barcode> detector, Bitmap bitmap) {
+            final Barcode barcode = readBarCode(detector, bitmap);
+            if (barcode == null) {
+                Log.d(TAG, "Could not decode the bitmap read.");
+                return null;
+            } else {
+                return buildBarCodeInfo(barcode);
+            }
+        }
 
-        final String format = BarcodeDataFormatter.getFormatString(barcode);
-        final String valueFormat = BarcodeDataFormatter.getValueFormatString(barcode);
-        final String formats = ("(" + format + ", " + valueFormat + ")");
+        private Barcode readBarCode(Detector<Barcode> detector, Bitmap barcodeImage) {
+            final Frame frame = new Frame.Builder().setBitmap(barcodeImage).build();
+            final SparseArray<Barcode> barcodes = detector.detect(frame);
 
-        return (formattedRawValue + "\n" + formats);
+            if (barcodes != null && barcodes.size() > 0) {
+                return barcodes.valueAt(0);
+            } else {
+                return null;
+            }
+        }
+
+        private String buildBarCodeInfo(Barcode barcode) {
+            final String formattedRawValue = BarcodeDataFormatter.formatBarCodeNumber(barcode.rawValue);
+
+            final String format = BarcodeDataFormatter.getFormatString(barcode);
+            final String valueFormat = BarcodeDataFormatter.getValueFormatString(barcode);
+            final String formats = ("(" + format + ", " + valueFormat + ")");
+
+            return (formattedRawValue + "\n" + formats);
+        }
     }
 }

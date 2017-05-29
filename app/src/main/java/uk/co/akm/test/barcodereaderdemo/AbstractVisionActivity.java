@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,6 +25,8 @@ import com.google.android.gms.vision.Detector;
  * Created by Thanos Mavroidis on 29/05/2017.
  */
 public abstract class AbstractVisionActivity<D> extends PhotoActivity {
+    private static final String TAG = AbstractVisionActivity.class.getSimpleName();
+
     private TextView textView;
     private ImageView photoView;
 
@@ -58,6 +61,7 @@ public abstract class AbstractVisionActivity<D> extends PhotoActivity {
         if (detector.isOperational()) {
             return detector;
         } else {
+            Log.d(TAG, "Detector is not operational.");
             return null;
         }
     }
@@ -81,9 +85,9 @@ public abstract class AbstractVisionActivity<D> extends PhotoActivity {
     }
 
     // Scan button clicked.
-    public void onScan(View view) {
+    public final void onScan(View view) {
         if (detector == null) {
-            textView.setText("Could not set up the detector!");
+            textView.setText("Could not set up the detector.");
         } else {
             final int scale = getPhotoScale();
             if (scale > 0) {
@@ -102,9 +106,12 @@ public abstract class AbstractVisionActivity<D> extends PhotoActivity {
         return 0;
     }
 
-    @Override
-    public final VisionAsyncTask buildVisionTask() {
-        return new VisionAsyncTask(this);
+    public final boolean hasDetector() {
+        return (detector != null);
+    }
+
+    public final Detector<D> getDetector() {
+        return detector;
     }
 
     public final void setImageView(final Bitmap photo) {
@@ -124,23 +131,4 @@ public abstract class AbstractVisionActivity<D> extends PhotoActivity {
             }
         });
     }
-
-    public final String decodeBitmapAsString(Bitmap bitmap) {
-        if (detector == null) {
-            return null;
-        } else {
-            return decodeBitmapAsString(detector, bitmap);
-        }
-    }
-
-    /**
-     * Performs the Google Vision API function that will use the input detector to decode the input
-     * bitmap as a string and return the latter. Examples of such Google Vision API functions are
-     * barcode or QR code reading or OCR operations.
-     *
-     * @param detector the detector used to process the bitmap
-     * @param bitmap the bitmap to process
-     * @return the result of the image decoding
-     */
-    protected abstract String decodeBitmapAsString(Detector<D> detector, Bitmap bitmap);
 }

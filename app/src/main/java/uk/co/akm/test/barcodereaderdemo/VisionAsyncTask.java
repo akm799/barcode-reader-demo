@@ -5,27 +5,29 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.android.gms.vision.Detector;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 /**
- * Task that reads an image file and processes its contents using some Google Vision API function.
- * The Google Vision API processing is delegated to the parent activity. The result of such
- * processing is a string (e.g. barcode reading or OCR).
+ * Task that reads an image file and processes its content using some Google Vision API function.
+ * The Google Vision API processing is abstracted and implemented by concrete sub-classes. The
+ * result of such processing is a string (e.g. barcode reading or OCR).
  *
  * Created by Thanos Mavroidis on 29/05/2017.
  */
-public final class VisionAsyncTask extends AsyncTask<Void, Void, String> {
+public abstract class VisionAsyncTask<D> extends AsyncTask<Object, Void, String> {
     private static final String TAG = VisionAsyncTask.class.getSimpleName();
 
     private int targetBitmapWidth;
     private int targetBitmapHeight;
     private String imageFilePath;
 
-    private AbstractVisionActivity parent;
+    private AbstractVisionActivity<D> parent;
 
-    VisionAsyncTask(AbstractVisionActivity parent) {
+    VisionAsyncTask(AbstractVisionActivity<D> parent) {
         this.parent = parent;
     }
 
@@ -34,7 +36,7 @@ public final class VisionAsyncTask extends AsyncTask<Void, Void, String> {
      * @param targetBitmapHeight the required y-scale of the bitmap or zero if the default scale is enough
      * @param imageFilePath the absolute path of the stored image file
      */
-    void setImageParameters(int targetBitmapWidth, int targetBitmapHeight, String imageFilePath) {
+    final void setImageParameters(int targetBitmapWidth, int targetBitmapHeight, String imageFilePath) {
         this.targetBitmapWidth = targetBitmapWidth;
         this.targetBitmapHeight = targetBitmapHeight;
         this.imageFilePath = imageFilePath;
@@ -55,17 +57,20 @@ public final class VisionAsyncTask extends AsyncTask<Void, Void, String> {
      * @return the decoded image as a string
      */
     @Override
-    protected String doInBackground(Void... params) {
+    protected final String doInBackground(Object... params) {
         final Bitmap bitmap = readImageFile(targetBitmapWidth, targetBitmapHeight, imageFilePath);
         if (bitmap == null) {
+            Log.d(TAG, "Could not read the stored image file.");
             return null;
         }
 
         if (parent == null) {
+            Log.d(TAG, "No parent activity available to display the image read.");
             return null;
         } else {
             parent.setImageView(bitmap);
-            return parent.decodeBitmapAsString(bitmap);
+
+            return decodeBitmapAsString(bitmap);
         }
     }
 
@@ -76,7 +81,7 @@ public final class VisionAsyncTask extends AsyncTask<Void, Void, String> {
             try {
                 return decodeFileToScale(targetBitmapWidth, targetBitmapHeight, imageFilePath); // Read the image file to the given scale.
             } catch (FileNotFoundException fnfe) {
-                Log.d(TAG, "Could not decode stored image: image file not found.");
+                Log.d(TAG, "Could not convert stored image to a bitmap: image file not found.");
                 return null;
             }
         }
@@ -104,12 +109,32 @@ public final class VisionAsyncTask extends AsyncTask<Void, Void, String> {
         return bmOptions;
     }
 
-    public void onParentPause() {
+    public final String decodeBitmapAsString(Bitmap bitmap) {
+        if (parent.hasDetector()) {
+            return decodeBitmapAsString(parent.getDetector(), bitmap);
+        } else {
+            Log.d(TAG, "Parent activity has no available detector to decode the image read.");
+            return null;
+        }
+    }
+
+    /**
+     * Performs the Google Vision API function that will use the input detector to decode the input
+     * bitmap as a string and return the latter. Examples of such Google Vision API functions are
+     * barcode or QR code reading or OCR operations.
+     *
+     * @param detector the detector used to process the bitmap
+     * @param bitmap the bitmap to process
+     * @return the string result of the image decoding
+     */
+    protected abstract String decodeBitmapAsString(Detector<D> detector, Bitmap bitmap);
+
+    public final void onParentPause() {
         parent = null;
     }
 
     @Override
-    protected void onPostExecute(String text) {
+    protected final void onPostExecute(String text) {
         if (text != null && parent != null) {
             try {
                 parent.setTextView(text);
