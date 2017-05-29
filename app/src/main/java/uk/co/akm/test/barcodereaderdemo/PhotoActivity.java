@@ -14,8 +14,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Helper activity for taking a picture. Subclasses can call the {@link #takePhoto()} or {@link #takePhoto(int, int)}
@@ -27,6 +25,7 @@ import java.util.Date;
  */
 public abstract class PhotoActivity extends AppCompatActivity {
     private static final int REQUEST_TAKE_PHOTO = 7351;
+    private static final String PHOTO_FILE_NAME = "last_photo_taken.jpg";
     private static final String PHOTO_FILE_PROVIDER_AUTHORITY = "uk.co.akm.test.barcodereaderdemo"; // This must match the authorities string specified in the file provider definition in AndroidManifest.xml
 
     private int targetBitmapWidth;
@@ -93,16 +92,11 @@ public abstract class PhotoActivity extends AppCompatActivity {
     }
 
     private File createImageFile() {
-        final String timeStamp = (new SimpleDateFormat("yyyyMMdd_HHmmss")).format(new Date());
-        final String imageFileName = "JPEG_" + timeStamp + "_";
         final File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 
         try {
-            final File imageFile = File.createTempFile(
-                    imageFileName,  /* prefix */
-                    ".jpg",         /* suffix */
-                    storageDir      /* directory */
-            );
+            final File imageFile = new File(storageDir, PHOTO_FILE_NAME);
+            imageFile.createNewFile();
 
             // Save a file: path for used with ACTION_IMAGE_CAPTURE intent to create the file that will hold the photo image.
             // We use this path to access and read the image file and to delete it, once we are done with it.
