@@ -1,29 +1,28 @@
 package uk.co.akm.test.barcodereaderdemo;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
  * Helper activity for taking a picture. Subclasses can call the {@link #takePhoto()} or {@link #takePhoto(int, int)}
- * method to take a photo and then receive a callback with the {@link #onPhotoTaken(Bitmap)} method when the photo
- * has been taken. This activity contains all the required photo-taking code so that we can present the barcode reading
- * code in isolation.
+ * method to take a photo and then provide a {@link VisionAsyncTask} instance to read the stored image file, convert
+ * it to a bitmap and then process the bitmap to, finally, return the processed result as a string. This activity
+ * contains all the required photo-taking code so that we can present the bitmap processing code in isolation.
  *
  * Created by Thanos Mavroidis on 05/05/2017.
  */
 public abstract class PhotoActivity extends AppCompatActivity {
+    private static final String TAG = PhotoActivity.class.getSimpleName();
+
     private static final int REQUEST_TAKE_PHOTO = 7351;
     private static final String PHOTO_FILE_NAME = "last_photo_taken.jpg";
     private static final String PHOTO_FILE_PROVIDER_AUTHORITY = "uk.co.akm.test.barcodereaderdemo"; // This must match the authorities string specified in the file provider definition in AndroidManifest.xml
@@ -32,11 +31,27 @@ public abstract class PhotoActivity extends AppCompatActivity {
     private int targetBitmapHeight;
     private String imageFilePath;
 
+    private VisionAsyncTask visionTask;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        cancelVisionTask();
+    }
+
+    protected final void cancelVisionTask() {
+        if (visionTask != null) {
+            visionTask.onParentPause();
+            visionTask = null;
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        deleteStoredImage();
+        deleteStoredImage(); // Make sure we have no image file left over.
     }
 
     /**
@@ -109,71 +124,44 @@ public abstract class PhotoActivity extends AppCompatActivity {
     }
 
     @Override
-    protected final void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == RESULT_OK) {
-                final Bitmap photo = readImageFile(targetBitmapWidth, targetBitmapHeight, imageFilePath);
-                if (photo == null) {
-                    toast("Could not read stored image.");
-                } else {
-                    onPhotoTaken(photo);
-                }
+                launchImageReadingAndProcessingTask();
             } else {
                 toast("Error when taking photo. Result code: " + resultCode);
             }
         }
     }
 
-    private Bitmap readImageFile(int targetBitmapWidth, int targetBitmapHeight, String imageFilePath) {
-        if (targetBitmapWidth <= 0 || targetBitmapHeight <= 0) {
-            return BitmapFactory.decodeFile(imageFilePath); // No scale. Just read the image file.
-        } else {
-            try {
-                return decodeFileToScale(targetBitmapWidth, targetBitmapHeight, imageFilePath); // Read the image file to the given scale.
-            } catch (FileNotFoundException fnfe) {
-                toast("Could not decode stored image: image file not found.");
-                return null;
-            }
-        }
-    }
-
-    private Bitmap decodeFileToScale(int targetBitmapWidth, int targetBitmapHeight, String imageFilePath) throws FileNotFoundException {
-        final File imageFile = new File(imageFilePath);
-
-        final BitmapFactory.Options bmOptions = measurePhotoDimensions(imageFile);
-        final int photoWidth = bmOptions.outWidth;
-        final int photoHeight = bmOptions.outHeight;
-
-        final int scaleFactor = Math.min(photoWidth / targetBitmapWidth, photoHeight / targetBitmapHeight);
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-
-        return BitmapFactory.decodeStream(new FileInputStream(imageFile), null, bmOptions);
-    }
-
-    private BitmapFactory.Options measurePhotoDimensions(File photoFile) throws FileNotFoundException {
-        final BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(new FileInputStream(photoFile), null, bmOptions);
-
-        return bmOptions;
+    private void launchImageReadingAndProcessingTask() {
+        visionTask = buildVisionTask();
+        visionTask.setImageParameters(targetBitmapWidth, targetBitmapHeight, imageFilePath);
+        visionTask.execute((Void) null);
     }
 
     /**
-     * Process the bitmap resulting from the photo taken.
-     *
-     * @param photo the bitmap of the photo taken
+     * Returns a {@link VisionAsyncTask} instance that will perform the following sequence:
+     * <ol>
+     *     <li>Read the stored image file</li>
+     *     <li>Convert the stored image file to a bitmap</li>
+     *     <li>Scale the bitmap appropriately</li>
+     *     <li>Decode the bitmap into a string using some Google Vision API functionality</li>
+     *     <li>Communicate the decoded string to the parent activity</li>
+     *     <li>Delete the image file processed, since it is no longer needed</li>
+     * <ol/>
      */
-    protected abstract void onPhotoTaken(Bitmap photo);
+    protected abstract VisionAsyncTask buildVisionTask();
 
-    private void deleteStoredImage() {
+    protected final void deleteStoredImage() {
         if (imageFilePath != null) {
             if (!(new File(imageFilePath)).delete()) {
-                toast("Could not delete stored image.");
+                Log.w(TAG, "Could not delete stored image.");
             } else {
                 imageFilePath = null;
                 targetBitmapWidth = 0;
                 targetBitmapHeight = 0;
+                Log.d(TAG, "Stored image file deleted.");
             }
         }
     }
