@@ -1,4 +1,4 @@
-package uk.co.akm.test.barcodereaderdemo;
+package uk.co.akm.test.barcodereaderdemo.base;
 
 import android.content.Context;
 import android.graphics.Bitmap;

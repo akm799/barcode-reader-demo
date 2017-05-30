@@ -1,4 +1,4 @@
-package uk.co.akm.test.barcodereaderdemo;
+package uk.co.akm.test.barcodereaderdemo.barcode;
 
 import com.google.android.gms.vision.barcode.Barcode;
 

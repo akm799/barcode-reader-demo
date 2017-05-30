@@ -17,7 +17,7 @@
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="barcode,ocr"/>
 
-        <activity android:name=".BarcodeReaderActivity" android:screenOrientation="portrait">
+        <activity android:name=".barcode.BarcodeReaderActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

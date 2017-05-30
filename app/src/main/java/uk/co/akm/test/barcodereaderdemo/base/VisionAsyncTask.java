@@ -1,4 +1,4 @@
-package uk.co.akm.test.barcodereaderdemo;
+package uk.co.akm.test.barcodereaderdemo.base;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,7 +27,7 @@ public abstract class VisionAsyncTask<D> extends AsyncTask<Object, Void, String>
 
     private AbstractVisionActivity<D> parent;
 
-    VisionAsyncTask(AbstractVisionActivity<D> parent) {
+    public VisionAsyncTask(AbstractVisionActivity<D> parent) {
         this.parent = parent;
     }
 

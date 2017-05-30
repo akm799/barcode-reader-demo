@@ -1,4 +1,4 @@
-package uk.co.akm.test.barcodereaderdemo;
+package uk.co.akm.test.barcodereaderdemo.ocr;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,6 +11,10 @@ import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
 import java.util.Collection;
+
+import uk.co.akm.test.barcodereaderdemo.R;
+import uk.co.akm.test.barcodereaderdemo.base.AbstractVisionActivity;
+import uk.co.akm.test.barcodereaderdemo.base.VisionAsyncTask;
 
 /**
  * Created by Thanos Mavroidis on 30/05/2017.

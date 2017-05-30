@@ -1,18 +1,18 @@
-package uk.co.akm.test.barcodereaderdemo;
+package uk.co.akm.test.barcodereaderdemo.barcode;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+
+import uk.co.akm.test.barcodereaderdemo.R;
+import uk.co.akm.test.barcodereaderdemo.base.AbstractVisionActivity;
+import uk.co.akm.test.barcodereaderdemo.base.VisionAsyncTask;
 
 /**
  * Simple barcode scanning example. This activity contains a single "Scan" button to scan a barcode.
