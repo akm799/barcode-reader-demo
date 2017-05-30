@@ -15,7 +15,7 @@ public class BarcodeDataFormatter {
      * groups of 6 digits, starting from the RHS. If the input cannot be formatted in that way, then
      * it is simply returned unchanged.
      */
-    public static String formatBarCodeNumber(String number) {
+    static String formatBarCodeNumber(String number) {
         try {
             Long.parseLong(number);
         } catch (NumberFormatException nfe) {
@@ -39,7 +39,7 @@ public class BarcodeDataFormatter {
         return sb.reverse().toString();
     }
 
-    public static String getFormatString(Barcode barcode) {
+    static String getFormatString(Barcode barcode) {
         if (barcode == null) {
             return null;
         }
@@ -63,7 +63,7 @@ public class BarcodeDataFormatter {
         }
     }
 
-    public static String getValueFormatString(Barcode barcode) {
+    static String getValueFormatString(Barcode barcode) {
         if (barcode == null) {
             return null;
         }
