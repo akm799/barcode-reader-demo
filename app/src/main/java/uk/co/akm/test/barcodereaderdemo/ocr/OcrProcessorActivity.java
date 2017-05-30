@@ -2,6 +2,7 @@ package uk.co.akm.test.barcodereaderdemo.ocr;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.google.android.gms.vision.Detector;
@@ -11,6 +12,7 @@ import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import uk.co.akm.test.barcodereaderdemo.R;
 import uk.co.akm.test.barcodereaderdemo.base.AbstractVisionActivity;
@@ -52,13 +54,30 @@ public final class OcrProcessorActivity extends AbstractVisionActivity<TextBlock
     }
 
     private static final class OcrProcessingTask extends VisionAsyncTask<TextBlock> {
+        private static final String TAG = OcrProcessingTask.class.getSimpleName();
 
         OcrProcessingTask(AbstractVisionActivity<TextBlock> parent) {
             super(parent);
         }
 
+        //TODO Add comments.
         @Override
         protected String decodeBitmapAsString(Detector<TextBlock> detector, Bitmap textImage) {
+            int maxLength = 0;
+            String longestText = null;
+            final Iterator<Bitmap> iterator = new RotationIterator(textImage);
+            while (iterator.hasNext()) {
+                final String text = recognizeTextInBitmap(detector, iterator.next());
+                if (text != null && text.length() > maxLength) {
+                    maxLength = text.length();
+                    longestText = text;
+                }
+            }
+
+            return longestText;
+        }
+
+        private String recognizeTextInBitmap(Detector<TextBlock> detector, Bitmap textImage) {
             final SparseArray<TextBlock> textBlocks = recognizeText(detector, textImage);
             if (textBlocks == null) {
                 return null;
