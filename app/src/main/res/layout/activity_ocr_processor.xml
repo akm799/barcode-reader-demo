@@ -10,8 +10,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:textSize="8sp"
-        android:text="Scan your barcode or QR code"/>
+        android:textSize="18sp"
+        android:text="Scan the text image"/>
 
     <!-- Will hold the decoded OCR display information -->
     <TextView
@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:textSize="18sp"/>
+        android:textSize="8sp"/>
 
     <!-- Button to initiate OCR processing -->
     <Button

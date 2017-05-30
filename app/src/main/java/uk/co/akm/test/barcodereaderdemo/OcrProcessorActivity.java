@@ -86,6 +86,7 @@ public final class OcrProcessorActivity extends AbstractVisionActivity<TextBlock
                 final TextBlock textBlock = textBlocks.get(textBlocks.keyAt(i));
                 if (textBlock != null) {
                     appendTextBlock(textBlock, sb);
+                    sb.append('\n');
                 }
             }
         }
@@ -101,6 +102,7 @@ public final class OcrProcessorActivity extends AbstractVisionActivity<TextBlock
             for (Text text : components) {
                 if (text != null) {
                     sb.append(text.getValue());
+                    sb.append(' ');
                 }
             }
         }
