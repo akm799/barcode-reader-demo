@@ -37,11 +37,15 @@ public abstract class AbstractVisionActivity<D> extends PhotoActivity {
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResId());
 
+        setTitle(getTitleText());
+
         detector = setUpDetector();
 
         textView = (TextView) findViewById(getTextViewResId());
         photoView = (ImageView) findViewById(getPhotoViewResId());
     }
+
+    protected abstract CharSequence getTitleText();
 
     @LayoutRes
     protected abstract int getLayoutResId();

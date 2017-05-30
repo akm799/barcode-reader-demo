@@ -26,6 +26,11 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 public final class BarcodeReaderActivity extends AbstractVisionActivity<Barcode> {
 
     @Override
+    protected CharSequence getTitleText() {
+        return "Barcode Reader Demo";
+    }
+
+    @Override
     protected int getLayoutResId() {
         return R.layout.activity_barcode_reader;
     }
