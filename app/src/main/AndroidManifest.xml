@@ -3,8 +3,13 @@
     package="uk.co.akm.test.barcodereaderdemo">
 
     <!-- Permissions to use the camera to take the barcode photo and to write to external photo so we can store the photo taken. -->
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="18" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
 
     <application
         android:allowBackup="true"
@@ -12,18 +17,27 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
-            android:value="barcode,ocr"/>
+            android:value="barcode,ocr" />
 
-        <activity android:name=".barcode.BarcodeReaderActivity" android:screenOrientation="portrait">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".barcode.BarcodeReaderActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".ocr.OcrProcessorActivity"
+            android:screenOrientation="portrait"/>
 
         <!-- File provider to create and write to the file holding the image data for the barcode photo. -->
         <provider
@@ -33,7 +47,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
 
     </application>
